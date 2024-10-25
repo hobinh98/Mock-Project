@@ -1,0 +1,72 @@
+<beans 
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd 
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd ">
+	
+	<!--  -->
+	<context:component-scan base-package="edu.fa" />
+	<!-- config annotation: MẶC ĐỊNH LÀ TRUE -->
+	<context:annotation-config />
+	<!-- KHAI BÁO beans xmlns:mvc -->
+	<!-- KHAI BÁO mvc annotation-driven -->
+	<mvc:annotation-driven />
+	<!-- mapping THƯ VIỆN bootstrap, css, js -->
+	<mvc:resources mapping="/styles/**" location="/styles/" cache-period="600000" />
+	<!-- mapping THƯ VIỆN bootstrap, css, js -->
+	<mvc:resources mapping="/image/**" location="/image/" cache-period="600000" />
+	<!-- Folder B NẰM TRONG Folder A -->
+	<!-- KHI name="prefix" value="/A/" THÌ CHỈ ĐỌC ĐƯỢC file.jsp NẰM TRONG Folder A -->
+	<!-- KHÔNG ĐỌC ĐƯỢC file.jsp NẰM TRONG Folder B -->
+	<!-- KHÔNG THỂ CÓ 2 THẺ <property name="prefix" value=""/> TRONG THẺ bean -->
+	<!-- CHỈ TẠO ĐƯỢC MỘT THẺ bean ĐỌC file.jsp TRONG file.xml bean -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	<!-- THÊM mapping ORM -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<!-- XỬ LÝ KIỂM Time: sendTimeAsDateTime=false -->
+		<property name="url" value="jdbc:sqlserver://DESKTOP-B0D0J2Q:1433;databaseName=springmvc_mock;trustServerCertificate=true;sendTimeAsDateTime=false" />
+		<property name="username" value="sa" />
+		<property name="password" value="12345678" />
+	</bean>
+	<!-- dataSource hibernate -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan" value="edu.fa.model" />	<!-- QUÉT Model @Entity -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.SQLServer2012Dialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<!-- <prop key="hibernate.format_sql">true</prop> -->
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.enable_lazy_load_no_trans">true</prop>
+			</props>
+		</property>
+	</bean>
+	<!-- sessionFactory -->
+	<bean id="myTransactionManager"	class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<!-- transaction-manager -->
+	<tx:annotation-driven proxy-target-class="true" transaction-manager="myTransactionManager" />
+	<!-- KHÔNG KHAI BÁO THẺ bean id="properties BÊN DƯỚI THÌ Web VẪN CHẠY BÌNH THƯỜNG -->
+	<bean id="properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<!-- ĐỌC File TRONG /src/main/resources -->
+				<value>classpath:app.properties</value>
+			</list>
+		</property>
+	</bean>
+</beans>
